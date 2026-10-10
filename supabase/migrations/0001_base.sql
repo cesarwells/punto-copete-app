@@ -13,7 +13,9 @@ create extension if not exists pgcrypto;
 -- mayúsculas y números para que el lector USB lo escriba igual con
 -- cualquier distribución de teclado.
 create or replace function public.random_code(len int)
-returns text language plpgsql volatile as $$
+returns text language plpgsql volatile
+-- En Supabase, pgcrypto vive en el esquema "extensions".
+set search_path = public, extensions as $$
 declare
   alphabet constant text := 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
   bytes bytea := gen_random_bytes(len);
@@ -26,7 +28,8 @@ begin
 end $$;
 
 create or replace function public.random_token()
-returns text language sql volatile as $$
+returns text language sql volatile
+set search_path = public, extensions as $$
   select translate(encode(gen_random_bytes(32), 'base64'), '+/=', '-_');
 $$;
 
